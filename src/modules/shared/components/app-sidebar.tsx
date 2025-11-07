@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Home,
@@ -10,9 +10,9 @@ import {
   Package,
   ChevronDown,
   LogOut,
-} from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -25,16 +25,20 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/src/modules/shared/components/ui/sidebar"
+} from "@/src/modules/shared/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/modules/shared/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/modules/shared/components/ui/avatar"
-import { ThemeMenuItem } from "@/src/modules/shared/components/theme-menu"
+} from "@/src/modules/shared/components/ui/dropdown-menu";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/src/modules/shared/components/ui/avatar";
+import { ThemeMenuItem } from "@/src/modules/shared/components/theme-menu";
 
 const menuItems = [
   {
@@ -45,32 +49,32 @@ const menuItems = [
   {
     title: "Analytics",
     icon: BarChart3,
-    href: "/analytics",
+    href: "/dashboard",
   },
   {
     title: "Users",
     icon: Users,
-    href: "/users",
+    href: "/dashboard",
   },
   {
     title: "Products",
     icon: Package,
-    href: "/products",
+    href: "/dashboard",
   },
   {
     title: "Reports",
     icon: FileText,
-    href: "/reports",
+    href: "/dashboard",
   },
   {
     title: "Settings",
     icon: Settings,
-    href: "/settings",
+    href: "/dashboard",
   },
-]
+];
 
 export function AppSidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <Sidebar>
@@ -160,5 +164,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
