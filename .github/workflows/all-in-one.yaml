@@ -19,3 +19,10 @@ jobs:
       install_command: 'pnpm install --frozen-lockfile'
       working_directory: '.'
     secrets: inherit
+
+  package:
+    needs: build
+    uses: zippy-payment/actions-templates/.github/workflows/package-next.yaml@poc
+    with:
+      working_directory: '.'
+    secrets: inherit
