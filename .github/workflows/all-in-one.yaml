@@ -1,0 +1,39 @@
+# .github/workflows/all-in-one.yaml
+name: CI Backoffice
+
+on:
+  push:
+    branches:
+      - main
+      - release/test
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: zippy-payment/actions-templates/.github/workflows/build-next.yaml@poc
+    with:
+      node_version: '22'
+      pnpm_version: '9'
+      build_command: 'pnpm build'
+      install_command: 'pnpm install --frozen-lockfile'
+      working_directory: '.'
+    secrets: inherit
+
+  package-test:
+    needs: build
+    if: github.ref == 'refs/heads/release/test'
+    uses: zippy-payment/actions-templates/.github/workflows/package-next.yaml@poc
+    with:
+      working_directory: '.'
+      environment: 'test'
+    secrets: inherit
+
+  package-prd:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    uses: zippy-payment/actions-templates/.github/workflows/package-next.yaml@poc
+    with:
+      working_directory: '.'
+      environment: 'production'
+    secrets: inherit
