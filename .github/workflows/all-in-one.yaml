@@ -7,7 +7,7 @@ on:
       - main
       - release/test
       - develop
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,9 +20,20 @@ jobs:
       working_directory: '.'
     secrets: inherit
 
-  package:
+  package-test:
     needs: build
+    if: github.ref == 'refs/heads/release/test'
     uses: zippy-payment/actions-templates/.github/workflows/package-next.yaml@poc
     with:
       working_directory: '.'
+      environment: 'test'
+    secrets: inherit
+
+  package-prd:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    uses: zippy-payment/actions-templates/.github/workflows/package-next.yaml@poc
+    with:
+      working_directory: '.'
+      environment: 'production'
     secrets: inherit
