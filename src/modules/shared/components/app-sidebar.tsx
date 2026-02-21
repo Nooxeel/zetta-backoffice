@@ -3,11 +3,10 @@
 import {
   Home,
   LayoutDashboard,
-  Users,
   Settings,
   FileText,
   BarChart3,
-  Package,
+  Database,
   ChevronDown,
   LogOut,
 } from "lucide-react";
@@ -47,29 +46,24 @@ const menuItems = [
     href: "/dashboard",
   },
   {
-    title: "Analytics",
-    icon: BarChart3,
-    href: "/dashboard",
-  },
-  {
-    title: "Users",
-    icon: Users,
-    href: "/dashboard",
-  },
-  {
-    title: "Products",
-    icon: Package,
-    href: "/dashboard",
-  },
-  {
     title: "Reports",
     icon: FileText,
-    href: "/dashboard",
+    href: "/dashboard/reports",
+  },
+  {
+    title: "ETL Warehouse",
+    icon: Database,
+    href: "/dashboard/etl",
+  },
+  {
+    title: "Databases",
+    icon: BarChart3,
+    href: "/dashboard/databases",
   },
   {
     title: "Settings",
     icon: Settings,
-    href: "/dashboard",
+    href: "/dashboard/settings",
   },
 ];
 
@@ -87,8 +81,8 @@ export function AppSidebar() {
                   <LayoutDashboard className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Zippy BO</span>
-                  <span className="text-xs">Back Office</span>
+                  <span className="font-semibold">Zetta</span>
+                  <span className="text-xs">Reports</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -145,7 +139,7 @@ export function AppSidebar() {
                 sideOffset={4}
               >
                 <DropdownMenuItem asChild>
-                  <Link href="/settings/profile">
+                  <Link href="/dashboard/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Profile Settings</span>
                   </Link>
@@ -153,7 +147,7 @@ export function AppSidebar() {
                 <ThemeMenuItem />
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/login">
+                  <Link href="/sign-in">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </Link>

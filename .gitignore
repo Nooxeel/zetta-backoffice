@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+package-lock.json
 /.pnp
 .pnp.*
 .yarn/*
@@ -32,6 +33,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+
+# Session docs (AI agent working files)
+/session-docs
+
+# AI agent working files
+.claude/
+
+# IDE
+.idea/
 
 # vercel
 .vercel

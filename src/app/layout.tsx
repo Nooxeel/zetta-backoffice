@@ -20,8 +20,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zippy BO - Back Office",
-  description: "Back office for Zippy Pay",
+  title: "Zetta Reports",
+  description: "Multi-language reporting system",
 };
 
 export default function RootLayout({
