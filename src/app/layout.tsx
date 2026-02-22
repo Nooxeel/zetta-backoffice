@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/src/modules/shared/components/theme-provider";
+import { AuthProviderWrapper } from "@/src/modules/shared/components/auth-provider-wrapper";
 
 const ibmPlexSans = IBM_Plex_Sans({
   variable: "--font-ibm-plex-sans",
@@ -40,7 +41,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AuthProviderWrapper>
+            {children}
+          </AuthProviderWrapper>
         </ThemeProvider>
       </body>
     </html>

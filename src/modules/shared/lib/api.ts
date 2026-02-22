@@ -1,14 +1,28 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const TOKEN_KEY = 'zetta_auth_token'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${API_URL}${path}`
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null
+
   const res = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   })
+
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(TOKEN_KEY)
+      document.cookie = 'zetta_auth_active=; path=/; max-age=0'
+      window.location.href = '/sign-in'
+    }
+    throw new Error('Session expired. Please sign in again.')
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
@@ -185,8 +199,12 @@ export function syncAllViews(
 ): AbortController {
   const controller = new AbortController()
   const url = `${API_URL}/api/etl/sync-all?db=${encodeURIComponent(db)}`
+  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null
 
-  fetch(url, { signal: controller.signal })
+  fetch(url, {
+    signal: controller.signal,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
     .then(async (res) => {
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
