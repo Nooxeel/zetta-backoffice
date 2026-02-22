@@ -228,7 +228,50 @@ export function syncAllViews(
   return controller
 }
 
-// --- Warehouse API Functions ---
+// --- Warehouse Types ---
+
+export type FilterCategory = 'text' | 'number' | 'date' | 'boolean' | 'unsupported'
+export type TextOperator = 'contains' | 'equals' | 'starts_with' | 'ends_with' | 'not_equals'
+export type NumberOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'between'
+export type DateOperator = 'eq' | 'before' | 'after' | 'between'
+export type BooleanOperator = 'eq'
+export type FilterOperator = TextOperator | NumberOperator | DateOperator | BooleanOperator
+
+export interface ColumnFilter {
+  id: string
+  column: string
+  operator: FilterOperator
+  value: string
+  value2?: string
+}
+
+export interface WarehouseColumn {
+  column: string
+  sqlType: string
+  pgType: string
+  nullable: boolean
+  filterCategory: FilterCategory
+}
+
+export interface WarehouseColumnsResponse {
+  columns: WarehouseColumn[]
+  count: number
+}
+
+export interface WarehouseTableInfo {
+  id: string
+  dbName: string
+  sourceSchema: string
+  sourceView: string
+  pgTableName: string
+  lastSyncAt: string | null
+  lastSyncRows: number | null
+}
+
+export interface WarehouseTablesResponse {
+  tables: WarehouseTableInfo[]
+  count: number
+}
 
 export interface WarehouseDataParams {
   syncedViewId: string
@@ -237,6 +280,17 @@ export interface WarehouseDataParams {
   search?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  filters?: ColumnFilter[]
+}
+
+// --- Warehouse API Functions ---
+
+export async function getWarehouseTables(): Promise<WarehouseTablesResponse> {
+  return apiFetch('/api/warehouse/tables')
+}
+
+export async function getWarehouseColumns(syncedViewId: string): Promise<WarehouseColumnsResponse> {
+  return apiFetch(`/api/warehouse/columns?syncedViewId=${encodeURIComponent(syncedViewId)}`)
 }
 
 export async function getWarehouseData(params: WarehouseDataParams): Promise<ViewDataResponse> {
@@ -247,5 +301,11 @@ export async function getWarehouseData(params: WarehouseDataParams): Promise<Vie
   if (params.search) searchParams.set('search', params.search)
   if (params.sortBy) searchParams.set('sortBy', params.sortBy)
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+  if (params.filters && params.filters.length > 0) {
+    const serialized = params.filters.map(({ column, operator, value, value2 }) => ({
+      column, operator, value, ...(value2 ? { value2 } : {}),
+    }))
+    searchParams.set('filters', JSON.stringify(serialized))
+  }
   return apiFetch(`/api/warehouse/data?${searchParams.toString()}`)
 }

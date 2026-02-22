@@ -7,6 +7,7 @@ import {
   FileText,
   BarChart3,
   Database,
+  SlidersHorizontal,
   ChevronDown,
   LogOut,
 } from "lucide-react";
@@ -54,6 +55,11 @@ const menuItems = [
     title: "ETL Warehouse",
     icon: Database,
     href: "/dashboard/etl",
+  },
+  {
+    title: "Warehouse Reports",
+    icon: SlidersHorizontal,
+    href: "/dashboard/warehouse-reports",
   },
   {
     title: "Databases",
