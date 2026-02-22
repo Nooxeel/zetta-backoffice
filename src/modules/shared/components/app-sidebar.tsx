@@ -1,11 +1,9 @@
 "use client";
 
 import {
-  Home,
   LayoutDashboard,
   Settings,
   FileText,
-  BarChart3,
   Database,
   SlidersHorizontal,
   ChevronDown,
@@ -42,11 +40,6 @@ import { ThemeMenuItem } from "@/src/modules/shared/components/theme-menu";
 
 const menuItems = [
   {
-    title: "Dashboard",
-    icon: Home,
-    href: "/dashboard",
-  },
-  {
     title: "Reports",
     icon: FileText,
     href: "/dashboard/reports",
@@ -60,16 +53,6 @@ const menuItems = [
     title: "Warehouse Reports",
     icon: SlidersHorizontal,
     href: "/dashboard/warehouse-reports",
-  },
-  {
-    title: "Databases",
-    icon: BarChart3,
-    href: "/dashboard/databases",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/dashboard/settings",
   },
 ];
 
