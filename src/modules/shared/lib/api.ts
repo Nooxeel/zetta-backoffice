@@ -161,6 +161,73 @@ export async function deleteSync(syncedViewId: string): Promise<{ message: strin
   return apiFetch(`/api/etl/sync/${syncedViewId}`, { method: 'DELETE' })
 }
 
+// --- Sync All (SSE) ---
+
+export type SyncAllEventType = 'start' | 'progress' | 'complete' | 'error'
+
+export interface SyncAllEvent {
+  type: SyncAllEventType
+  total?: number
+  views?: string[]
+  current?: number
+  view?: string
+  status?: 'syncing' | 'success' | 'failed'
+  rowsSynced?: number
+  durationMs?: number
+  error?: string
+  successCount?: number
+  failCount?: number
+}
+
+export function syncAllViews(
+  db: string,
+  onEvent: (event: SyncAllEvent) => void,
+): AbortController {
+  const controller = new AbortController()
+  const url = `${API_URL}/api/etl/sync-all?db=${encodeURIComponent(db)}`
+
+  fetch(url, { signal: controller.signal })
+    .then(async (res) => {
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        onEvent({ type: 'error', error: body.error || `API error: ${res.status}` })
+        return
+      }
+
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() || ''
+
+        for (const part of parts) {
+          const line = part.trim()
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              onEvent(data)
+            } catch {
+              // ignore malformed JSON
+            }
+          }
+        }
+      }
+    })
+    .catch((err) => {
+      if (err.name !== 'AbortError') {
+        onEvent({ type: 'error', error: err.message })
+      }
+    })
+
+  return controller
+}
+
 // --- Warehouse API Functions ---
 
 export interface WarehouseDataParams {

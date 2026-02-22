@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw, Play, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -13,17 +13,28 @@ import {
 } from "@/src/modules/shared/components/ui/card"
 import { Button } from "@/src/modules/shared/components/ui/button"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
+import { Badge } from "@/src/modules/shared/components/ui/badge"
 import {
   getDatabases,
   getViews,
   getEtlStatus,
   triggerSync,
+  syncAllViews,
   type ViewInfo,
   type SyncedViewInfo,
+  type SyncAllEvent,
 } from "@/src/modules/shared/lib/api"
 import { DatabasePicker } from "@/src/modules/reports/components/database-picker"
 import { ViewPicker } from "@/src/modules/reports/components/view-picker"
 import { SyncStatusTable } from "./sync-status-table"
+
+interface ViewProgress {
+  name: string
+  status: "pending" | "syncing" | "success" | "failed"
+  rowsSynced?: number
+  durationMs?: number
+  error?: string
+}
 
 export function EtlDashboard() {
   const [databases, setDatabases] = React.useState<string[]>([])
@@ -38,6 +49,13 @@ export function EtlDashboard() {
   const [loadingStatus, setLoadingStatus] = React.useState(true)
   const [syncing, setSyncing] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+
+  // Sync All state
+  const [syncAllRunning, setSyncAllRunning] = React.useState(false)
+  const [syncAllProgress, setSyncAllProgress] = React.useState<ViewProgress[]>([])
+  const [syncAllCurrent, setSyncAllCurrent] = React.useState(0)
+  const [syncAllTotal, setSyncAllTotal] = React.useState(0)
+  const abortRef = React.useRef<AbortController | null>(null)
 
   // Fetch databases on mount
   React.useEffect(() => {
@@ -96,6 +114,65 @@ export function EtlDashboard() {
     }
   }
 
+  const handleSyncAll = () => {
+    if (!selectedDb) return
+
+    setSyncAllRunning(true)
+    setSyncAllProgress([])
+    setSyncAllCurrent(0)
+    setSyncAllTotal(0)
+    setError(null)
+
+    const controller = syncAllViews(selectedDb, (event: SyncAllEvent) => {
+      if (event.type === "start") {
+        setSyncAllTotal(event.total || 0)
+        setSyncAllProgress(
+          (event.views || []).map((name) => ({
+            name,
+            status: "pending" as const,
+          }))
+        )
+      } else if (event.type === "progress") {
+        setSyncAllCurrent(event.current || 0)
+        setSyncAllProgress((prev) =>
+          prev.map((v) =>
+            v.name === event.view
+              ? {
+                  ...v,
+                  status: event.status === "syncing" ? "syncing" : event.status === "success" ? "success" : "failed",
+                  rowsSynced: event.rowsSynced,
+                  durationMs: event.durationMs,
+                  error: event.error,
+                }
+              : v
+          )
+        )
+      } else if (event.type === "complete") {
+        setSyncAllRunning(false)
+        refreshStatus()
+        const s = event.successCount || 0
+        const f = event.failCount || 0
+        if (f === 0) {
+          toast.success(`All ${s} views synced successfully`)
+        } else {
+          toast.warning(`Sync complete: ${s} succeeded, ${f} failed`)
+        }
+      } else if (event.type === "error") {
+        setSyncAllRunning(false)
+        toast.error(`Sync All failed: ${event.error}`)
+        setError(event.error || "Unknown error")
+      }
+    })
+
+    abortRef.current = controller
+  }
+
+  const completedCount = syncAllProgress.filter(
+    (v) => v.status === "success" || v.status === "failed"
+  ).length
+
+  const progressPercent = syncAllTotal > 0 ? (completedCount / syncAllTotal) * 100 : 0
+
   return (
     <div className="flex flex-col gap-4">
       {/* Sync trigger section */}
@@ -103,7 +180,7 @@ export function EtlDashboard() {
         <CardHeader>
           <CardTitle>New Sync</CardTitle>
           <CardDescription>
-            Select a database and view to sync to the PostgreSQL warehouse.
+            Select a database and view to sync to the PostgreSQL warehouse, or sync all views at once.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -129,7 +206,7 @@ export function EtlDashboard() {
             />
             <Button
               onClick={handleSync}
-              disabled={!selectedDb || !selectedView || syncing}
+              disabled={!selectedDb || !selectedView || syncing || syncAllRunning}
             >
               {syncing ? (
                 <>
@@ -140,6 +217,23 @@ export function EtlDashboard() {
                 "Sync Now"
               )}
             </Button>
+            <Button
+              variant="secondary"
+              onClick={handleSyncAll}
+              disabled={!selectedDb || syncAllRunning || syncing}
+            >
+              {syncAllRunning ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Syncing All...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Sync All
+                </>
+              )}
+            </Button>
           </div>
           {error && (
             <div className="mt-4 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
@@ -148,6 +242,88 @@ export function EtlDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Sync All progress */}
+      {syncAllProgress.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>
+                  {syncAllRunning
+                    ? `Syncing All Views (${completedCount}/${syncAllTotal})`
+                    : `Sync Complete (${completedCount}/${syncAllTotal})`}
+                </CardTitle>
+                <CardDescription>
+                  {syncAllRunning
+                    ? "Progress of each view being synced to PostgreSQL."
+                    : "All views have been processed."}
+                </CardDescription>
+              </div>
+              {!syncAllRunning && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSyncAllProgress([])}
+                >
+                  Dismiss
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Progress bar */}
+            <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-secondary">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+
+            {/* View list */}
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {syncAllProgress.map((v) => (
+                <div
+                  key={v.name}
+                  className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {v.status === "pending" && (
+                      <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+                    )}
+                    {v.status === "syncing" && (
+                      <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+                    )}
+                    {v.status === "success" && (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                    )}
+                    {v.status === "failed" && (
+                      <XCircle className="h-4 w-4 text-destructive shrink-0" />
+                    )}
+                    <span className="truncate">{v.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    {v.status === "syncing" && (
+                      <Badge variant="secondary">Syncing</Badge>
+                    )}
+                    {v.status === "success" && (
+                      <span className="text-xs text-muted-foreground">
+                        {v.rowsSynced?.toLocaleString()} rows
+                        {v.durationMs != null && ` · ${v.durationMs < 1000 ? `${v.durationMs}ms` : `${(v.durationMs / 1000).toFixed(1)}s`}`}
+                      </span>
+                    )}
+                    {v.status === "failed" && (
+                      <span className="text-xs text-destructive truncate max-w-[200px]" title={v.error}>
+                        {v.error}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Status table */}
       <Card>
