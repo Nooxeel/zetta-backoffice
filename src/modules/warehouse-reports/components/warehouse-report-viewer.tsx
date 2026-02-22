@@ -152,6 +152,7 @@ export function WarehouseReportViewer() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Controls card — table picker, search, filters (no horizontal scroll) */}
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-end gap-4">
@@ -198,85 +199,96 @@ export function WarehouseReportViewer() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-              {error}
-            </div>
-          )}
 
-          {/* Filter Builder */}
-          {showFilters && selectedTable && !loadingColumns && (
-            <div className="mb-4 rounded-md border p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">Column Filters</h3>
+        {/* Filter section — isolated from data table scroll */}
+        {(error || (showFilters && selectedTable && !loadingColumns) || appliedFilters.length > 0) && (
+          <CardContent className="pt-0 pb-4">
+            {error && (
+              <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+                {error}
               </div>
-              <FilterBuilder
-                columns={columns}
-                filters={filters}
-                onFiltersChange={setFilters}
-              />
-              {filters.length > 0 && (
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    onClick={handleApplyFilters}
-                    disabled={!filtersChanged}
-                  >
-                    Apply Filters
-                  </Button>
+            )}
+
+            {/* Filter Builder */}
+            {showFilters && selectedTable && !loadingColumns && (
+              <div className="rounded-md border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium">Column Filters</h3>
                 </div>
-              )}
-            </div>
-          )}
+                <FilterBuilder
+                  columns={columns}
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                />
+                {filters.length > 0 && (
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={handleApplyFilters}
+                      disabled={!filtersChanged}
+                    >
+                      Apply Filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
-          {/* Active Filters Badges */}
-          {appliedFilters.length > 0 && (
-            <div className="mb-4">
-              <ActiveFilters
-                filters={appliedFilters}
-                columns={columns}
-                onRemove={handleRemoveAppliedFilter}
-                onClearAll={handleClearAppliedFilters}
-              />
-            </div>
-          )}
-
-          {/* Loading skeleton */}
-          {loadingData && !viewData && (
-            <div className="space-y-3">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          )}
-
-          {/* Data table */}
-          {viewData && (
-            <div className={loadingData ? "opacity-50 pointer-events-none" : ""}>
-              <ReportDataTable
-                data={viewData}
-                onPageChange={setPage}
-                onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(1) }}
-                onSortChange={handleSortChange}
-              />
-            </div>
-          )}
-
-          {/* Empty states */}
-          {!viewData && !loadingData && !error && (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              {!selectedTable
-                ? "Select a table to get started."
-                : loadingColumns
-                  ? "Loading columns..."
-                  : "No data available."}
-            </div>
-          )}
-        </CardContent>
+            {/* Active Filters Badges */}
+            {appliedFilters.length > 0 && (
+              <div className={showFilters && selectedTable && !loadingColumns ? "mt-4" : ""}>
+                <ActiveFilters
+                  filters={appliedFilters}
+                  columns={columns}
+                  onRemove={handleRemoveAppliedFilter}
+                  onClearAll={handleClearAppliedFilters}
+                />
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
+
+      {/* Data card — table with its own horizontal scroll, separate from controls */}
+      {(viewData || loadingData || (!selectedTable && !error)) && (
+        <Card>
+          <CardContent className="pt-6">
+            {/* Loading skeleton */}
+            {loadingData && !viewData && (
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            )}
+
+            {/* Data table */}
+            {viewData && (
+              <div className={loadingData ? "opacity-50 pointer-events-none" : ""}>
+                <ReportDataTable
+                  data={viewData}
+                  onPageChange={setPage}
+                  onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(1) }}
+                  onSortChange={handleSortChange}
+                />
+              </div>
+            )}
+
+            {/* Empty states */}
+            {!viewData && !loadingData && !error && (
+              <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+                {!selectedTable
+                  ? "Select a table to get started."
+                  : loadingColumns
+                    ? "Loading columns..."
+                    : "No data available."}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
