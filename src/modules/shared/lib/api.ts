@@ -420,3 +420,42 @@ export async function updateUserRole(userId: string, role: 'ADMIN' | 'BASIC'): P
 export async function deleteUser(userId: string): Promise<{ message: string }> {
   return apiFetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
 }
+
+// --- Stats Types ---
+
+export interface StatsSummary {
+  syncedViews: number
+  totalUsers: number
+  lastSyncAt: string | null
+  totalWarehouseRows: number
+}
+
+export interface ViewChartData {
+  name: string
+  fullName: string
+  rows: number
+  lastSyncAt: string | null
+  durationMs: number
+}
+
+export interface SyncHistoryEntry {
+  date: string
+  success: number
+  failed: number
+  totalRows: number
+}
+
+export interface WarehouseOverview {
+  viewsData: ViewChartData[]
+  syncHistory: SyncHistoryEntry[]
+}
+
+// --- Stats API Functions ---
+
+export async function getStatsSummary(): Promise<StatsSummary> {
+  return apiFetch('/api/stats/summary')
+}
+
+export async function getWarehouseOverview(): Promise<WarehouseOverview> {
+  return apiFetch('/api/stats/warehouse-overview')
+}
