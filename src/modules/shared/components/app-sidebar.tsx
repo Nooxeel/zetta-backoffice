@@ -7,6 +7,8 @@ import {
   SlidersHorizontal,
   ChevronDown,
   LogOut,
+  Home,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -48,6 +50,12 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
+    title: "Dashboard",
+    icon: Home,
+    href: "/dashboard",
+    requiredRole: "ADMIN",
+  },
+  {
     title: "Reports",
     icon: FileText,
     href: "/dashboard/reports",
@@ -62,6 +70,18 @@ const menuItems: MenuItem[] = [
     title: "Warehouse Reports",
     icon: SlidersHorizontal,
     href: "/dashboard/warehouse-reports",
+  },
+  {
+    title: "Databases",
+    icon: Database,
+    href: "/dashboard/databases",
+    requiredRole: "ADMIN",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/dashboard/settings",
+    requiredRole: "ADMIN",
   },
 ];
 
