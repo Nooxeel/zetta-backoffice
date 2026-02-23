@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search, SlidersHorizontal } from "lucide-react"
+import { Search, SlidersHorizontal, Download, FileSpreadsheet, FileText } from "lucide-react"
 
 import {
   Card,
@@ -13,9 +13,17 @@ import { Button } from "@/src/modules/shared/components/ui/button"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
 import { Badge } from "@/src/modules/shared/components/ui/badge"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/modules/shared/components/ui/dropdown-menu"
+import {
   getWarehouseTables,
   getWarehouseColumns,
   getWarehouseData,
+  getWarehouseExportUrl,
+  downloadExport,
   type WarehouseTableInfo,
   type WarehouseColumn,
   type ColumnFilter,
@@ -148,6 +156,30 @@ export function WarehouseReportViewer() {
     setPage(1)
   }
 
+  const [exporting, setExporting] = React.useState(false)
+
+  const handleExport = async (format: 'csv' | 'xlsx') => {
+    if (!selectedTable) return
+    setExporting(true)
+    try {
+      const validFilters = appliedFilters.filter(f => f.column && f.value)
+      const url = getWarehouseExportUrl({
+        syncedViewId: selectedTable.id,
+        format,
+        search: debouncedSearch || undefined,
+        sortBy,
+        sortOrder,
+        filters: validFilters.length > 0 ? validFilters : undefined,
+      })
+      const ext = format === 'xlsx' ? 'xlsx' : 'csv'
+      await downloadExport(url, `${selectedTable.sourceView}_${new Date().toISOString().slice(0, 10)}.${ext}`)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const filtersChanged = JSON.stringify(filters) !== JSON.stringify(appliedFilters)
 
   return (
@@ -191,6 +223,26 @@ export function WarehouseReportViewer() {
                   </Badge>
                 )}
               </Button>
+            )}
+            {viewData && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="mb-0.5" disabled={exporting}>
+                    <Download className="mr-2 h-4 w-4" />
+                    {exporting ? "Exporting..." : "Export"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Export CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('xlsx')}>
+                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                    Export Excel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             {viewData && (
               <Badge variant="secondary" className="mb-1">

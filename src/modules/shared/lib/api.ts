@@ -311,6 +311,66 @@ export async function getWarehouseColumns(syncedViewId: string): Promise<Warehou
   return apiFetch(`/api/warehouse/columns?syncedViewId=${encodeURIComponent(syncedViewId)}`)
 }
 
+export function getWarehouseExportUrl(params: {
+  syncedViewId: string
+  format: 'csv' | 'xlsx'
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  filters?: ColumnFilter[]
+}): string {
+  const searchParams = new URLSearchParams()
+  searchParams.set('syncedViewId', params.syncedViewId)
+  searchParams.set('format', params.format)
+  if (params.search) searchParams.set('search', params.search)
+  if (params.sortBy) searchParams.set('sortBy', params.sortBy)
+  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+  if (params.filters && params.filters.length > 0) {
+    const serialized = params.filters.map(({ column, operator, value, value2 }) => ({
+      column, operator, value, ...(value2 ? { value2 } : {}),
+    }))
+    searchParams.set('filters', JSON.stringify(serialized))
+  }
+  return `${API_URL}/api/warehouse/export?${searchParams.toString()}`
+}
+
+export function getViewExportUrl(params: {
+  db: string
+  view: string
+  schema?: string
+  format: 'csv' | 'xlsx'
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}): string {
+  const searchParams = new URLSearchParams()
+  searchParams.set('db', params.db)
+  searchParams.set('view', params.view)
+  searchParams.set('format', params.format)
+  if (params.schema) searchParams.set('schema', params.schema)
+  if (params.search) searchParams.set('search', params.search)
+  if (params.sortBy) searchParams.set('sortBy', params.sortBy)
+  if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+  return `${API_URL}/api/views/export?${searchParams.toString()}`
+}
+
+export async function downloadExport(url: string, filename: string): Promise<void> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null
+  const res = await fetch(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || `Export failed: ${res.status}`)
+  }
+  const blob = await res.blob()
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+
 export async function getWarehouseData(params: WarehouseDataParams): Promise<ViewDataResponse> {
   const searchParams = new URLSearchParams()
   searchParams.set('syncedViewId', params.syncedViewId)

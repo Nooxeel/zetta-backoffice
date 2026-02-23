@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Search } from "lucide-react"
+import { Search, Download, FileSpreadsheet, FileText } from "lucide-react"
 
 import {
   Card,
@@ -9,12 +9,21 @@ import {
   CardHeader,
 } from "@/src/modules/shared/components/ui/card"
 import { Input } from "@/src/modules/shared/components/ui/input"
+import { Button } from "@/src/modules/shared/components/ui/button"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
 import { Badge } from "@/src/modules/shared/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/modules/shared/components/ui/dropdown-menu"
 import {
   getDatabases,
   getViews,
   getViewData,
+  getViewExportUrl,
+  downloadExport,
   type ViewInfo,
   type ViewDataResponse,
 } from "@/src/modules/shared/lib/api"
@@ -41,6 +50,7 @@ export function ReportViewer() {
   const [loadingData, setLoadingData] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
+  const [exporting, setExporting] = React.useState(false)
   const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
 
@@ -126,6 +136,28 @@ export function ReportViewer() {
     setPage(1)
   }
 
+  const handleExport = async (format: 'csv' | 'xlsx') => {
+    if (!selectedDb || !selectedView) return
+    setExporting(true)
+    try {
+      const url = getViewExportUrl({
+        db: selectedDb,
+        view: selectedView.name,
+        schema: selectedView.schema,
+        format,
+        search: debouncedSearch || undefined,
+        sortBy,
+        sortOrder,
+      })
+      const ext = format === 'xlsx' ? 'xlsx' : 'csv'
+      await downloadExport(url, `${selectedView.name}_${new Date().toISOString().slice(0, 10)}.${ext}`)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -162,6 +194,26 @@ export function ReportViewer() {
                 />
               </div>
             </div>
+          )}
+          {viewData && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="mb-0.5" disabled={exporting}>
+                  <Download className="mr-2 h-4 w-4" />
+                  {exporting ? "Exporting..." : "Export"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Export CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('xlsx')}>
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Export Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           {viewData && (
             <Badge variant="secondary" className="mb-1">
