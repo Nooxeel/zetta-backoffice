@@ -459,3 +459,59 @@ export async function getStatsSummary(): Promise<StatsSummary> {
 export async function getWarehouseOverview(): Promise<WarehouseOverview> {
   return apiFetch('/api/stats/warehouse-overview')
 }
+
+// --- Business KPIs Types ---
+
+export interface BusinessKpisData {
+  kpis: {
+    totalStockFisico: number
+    totalStockDisponible: number
+    productosUnicosEnStock: number
+    lineasProductoActivas: number
+    unidadesProxVencer90d: number
+    unidadesVencidasUltimoMes: number
+  }
+  charts: {
+    recibidoVsConsumido: Array<{
+      mes: string
+      mesLabel: string
+      recibido: number
+      consumido: number
+    }>
+    alertasVencimiento: Array<{
+      lineaCod: string
+      lineaDesc: string
+      bucket_0_30: number
+      bucket_31_60: number
+      bucket_61_90: number
+      bucket_91_120: number
+      bucket_121_150: number
+      bucket_151_180: number
+    }>
+    top10Rotacion: Array<{
+      codigo: string
+      descripcion: string
+      lineaDesc: string
+      qtyConsumida12M: number
+      ranking: number
+    }>
+    stockPorLinea: Array<{
+      lineaCod: string
+      lineaDesc: string
+      stockFisico: number
+      stockDisponible: number
+    }>
+    historialVencidos: Array<{
+      mes: string
+      mesLabel: string
+      vencidasFisica: number
+      vencidasDisponible: number
+    }>
+  }
+}
+
+// --- Business KPIs API Functions ---
+
+export async function getBusinessKpis(): Promise<BusinessKpisData> {
+  return apiFetch('/api/stats/business-kpis')
+}
