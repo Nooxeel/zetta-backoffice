@@ -387,3 +387,36 @@ export async function getWarehouseData(params: WarehouseDataParams): Promise<Vie
   }
   return apiFetch(`/api/warehouse/data?${searchParams.toString()}`)
 }
+
+// --- Admin Types ---
+
+export interface AdminUser {
+  id: string
+  email: string
+  name: string | null
+  image: string | null
+  role: 'ADMIN' | 'BASIC'
+  createdAt: string
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[]
+  count: number
+}
+
+// --- Admin API Functions ---
+
+export async function getUsers(): Promise<AdminUsersResponse> {
+  return apiFetch('/api/admin/users')
+}
+
+export async function updateUserRole(userId: string, role: 'ADMIN' | 'BASIC'): Promise<{ user: AdminUser }> {
+  return apiFetch(`/api/admin/users/${userId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  })
+}
+
+export async function deleteUser(userId: string): Promise<{ message: string }> {
+  return apiFetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
+}

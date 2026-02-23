@@ -8,7 +8,7 @@ import {
   ChevronDown,
   LogOut,
   Home,
-  Settings,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -78,8 +78,8 @@ const menuItems: MenuItem[] = [
     requiredRole: "ADMIN",
   },
   {
-    title: "Settings",
-    icon: Settings,
+    title: "Users",
+    icon: Users,
     href: "/dashboard/settings",
     requiredRole: "ADMIN",
   },
