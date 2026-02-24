@@ -67,8 +67,8 @@ export function ReceivedVsConsumedChart({ data, loading }: ReceivedVsConsumedCha
                 formatter={(value) => [Number(value ?? 0).toLocaleString(), '']}
               />
               <Legend />
-              <Bar dataKey="recibido" name="Recibido" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="consumido" name="Consumido" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} opacity={0.8} />
+              <Bar dataKey="recibido" name="Recibido" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="consumido" name="Consumido" fill="#f97316" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

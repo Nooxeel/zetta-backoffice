@@ -73,8 +73,8 @@ export function StockByLineChart({ data, loading }: StockByLineChartProps) {
                 ]}
               />
               <Legend formatter={(value) => value === 'stockFisico' ? 'Stock Físico' : 'Disponible'} />
-              <Bar dataKey="stockFisico" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="stockDisponible" fill="hsl(var(--primary))" opacity={0.5} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="stockFisico" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="stockDisponible" fill="#22c55e" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

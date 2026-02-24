@@ -78,7 +78,7 @@ export function TopRotationChart({ data, loading }: TopRotationChartProps) {
                   return item ? `${item.descripcion}\n(${item.lineaDesc || 'Sin línea'})` : ''
                 }}
               />
-              <Bar dataKey="qtyConsumida12M" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="qtyConsumida12M" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
