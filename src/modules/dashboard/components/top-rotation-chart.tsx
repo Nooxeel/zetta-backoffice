@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/src/modules/shared/components/ui/card"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
+import { useIsMobile } from "@/src/modules/shared/hooks/use-mobile"
 
 interface TopRotationChartProps {
   data: Array<{
@@ -30,10 +31,21 @@ interface TopRotationChartProps {
 }
 
 export function TopRotationChart({ data, loading }: TopRotationChartProps) {
+  const isMobile = useIsMobile()
+
+  const maxDescLength = isMobile ? 14 : 30
   const chartData = data.map((d) => ({
     ...d,
-    shortDesc: d.descripcion.length > 30 ? d.descripcion.slice(0, 28) + "…" : d.descripcion,
+    shortDesc: d.descripcion.length > maxDescLength
+      ? d.descripcion.slice(0, maxDescLength - 2) + "…"
+      : d.descripcion,
   }))
+
+  const chartHeight = isMobile ? 300 : 350
+  const margins = isMobile
+    ? { top: 5, right: 10, left: 0, bottom: 5 }
+    : { top: 5, right: 30, left: 20, bottom: 5 }
+  const yAxisWidth = isMobile ? 80 : 160
 
   return (
     <Card>
@@ -43,26 +55,26 @@ export function TopRotationChart({ data, loading }: TopRotationChartProps) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-[350px] w-full" />
+          <Skeleton className="h-[300px] md:h-[350px] w-full" />
         ) : data.length === 0 ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+          <div className="flex h-[300px] md:h-[350px] items-center justify-center text-muted-foreground">
             Sin datos de rotación
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <BarChart data={chartData} layout="vertical" margin={margins}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 9 : 12 }}
                 className="fill-muted-foreground"
                 allowDecimals={false}
               />
               <YAxis
                 dataKey="shortDesc"
                 type="category"
-                width={160}
-                tick={{ fontSize: 10 }}
+                width={yAxisWidth}
+                tick={{ fontSize: isMobile ? 8 : 10 }}
                 className="fill-muted-foreground"
               />
               <Tooltip

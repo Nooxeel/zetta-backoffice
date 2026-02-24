@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/src/modules/shared/components/ui/card"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
+import { useIsMobile } from "@/src/modules/shared/hooks/use-mobile"
 
 interface ExpirationAlertsChartProps {
   data: Array<{
@@ -52,6 +53,14 @@ const BUCKET_LABELS: Record<string, string> = {
 }
 
 export function ExpirationAlertsChart({ data, loading }: ExpirationAlertsChartProps) {
+  const isMobile = useIsMobile()
+
+  const chartHeight = isMobile ? 280 : 350
+  const margins = isMobile
+    ? { top: 5, right: 10, left: 0, bottom: 5 }
+    : { top: 5, right: 30, left: 20, bottom: 5 }
+  const yAxisWidth = isMobile ? 60 : 120
+
   return (
     <Card>
       <CardHeader>
@@ -60,27 +69,28 @@ export function ExpirationAlertsChart({ data, loading }: ExpirationAlertsChartPr
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-[350px] w-full" />
+          <Skeleton className="h-[280px] md:h-[350px] w-full" />
         ) : data.length === 0 ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+          <div className="flex h-[280px] md:h-[350px] items-center justify-center text-muted-foreground">
             Sin alertas de vencimiento
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <BarChart data={data} layout="vertical" margin={margins}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 9 : 12 }}
                 className="fill-muted-foreground"
                 allowDecimals={false}
               />
               <YAxis
                 dataKey="lineaDesc"
                 type="category"
-                width={120}
-                tick={{ fontSize: 10 }}
+                width={yAxisWidth}
+                tick={{ fontSize: isMobile ? 8 : 10 }}
                 className="fill-muted-foreground"
+                tickFormatter={isMobile ? (val: string) => (val.length > 10 ? val.slice(0, 8) + "…" : val) : undefined}
               />
               <Tooltip
                 contentStyle={{
@@ -94,7 +104,7 @@ export function ExpirationAlertsChart({ data, loading }: ExpirationAlertsChartPr
                   BUCKET_LABELS[name as string] || name,
                 ]}
               />
-              <Legend formatter={(value) => BUCKET_LABELS[value] || value} />
+              {!isMobile && <Legend formatter={(value) => BUCKET_LABELS[value] || value} />}
               {Object.entries(BUCKET_COLORS).map(([key, color]) => (
                 <Bar key={key} dataKey={key} stackId="a" fill={color} />
               ))}

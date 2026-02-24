@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/src/modules/shared/components/ui/card"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
+import { useIsMobile } from "@/src/modules/shared/hooks/use-mobile"
 
 interface StockByLineChartProps {
   data: Array<{
@@ -30,6 +31,13 @@ interface StockByLineChartProps {
 }
 
 export function StockByLineChart({ data, loading }: StockByLineChartProps) {
+  const isMobile = useIsMobile()
+
+  const chartHeight = isMobile ? 280 : 350
+  const margins = isMobile
+    ? { top: 5, right: 10, left: 0, bottom: 40 }
+    : { top: 5, right: 30, left: 20, bottom: 60 }
+
   return (
     <Card>
       <CardHeader>
@@ -38,27 +46,28 @@ export function StockByLineChart({ data, loading }: StockByLineChartProps) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-[350px] w-full" />
+          <Skeleton className="h-[280px] md:h-[350px] w-full" />
         ) : data.length === 0 ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+          <div className="flex h-[280px] md:h-[350px] items-center justify-center text-muted-foreground">
             Sin datos de stock por línea
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <BarChart data={data} margin={margins}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="lineaDesc"
-                angle={-35}
+                angle={isMobile ? -45 : -35}
                 textAnchor="end"
-                interval={0}
-                tick={{ fontSize: 10 }}
+                interval={isMobile ? "preserveStartEnd" : 0}
+                tick={{ fontSize: isMobile ? 8 : 10 }}
                 className="fill-muted-foreground"
               />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
                 className="fill-muted-foreground"
                 tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val)}
+                width={isMobile ? 35 : 60}
               />
               <Tooltip
                 contentStyle={{
@@ -72,7 +81,10 @@ export function StockByLineChart({ data, loading }: StockByLineChartProps) {
                   name === 'stockFisico' ? 'Stock Físico' : 'Disponible',
                 ]}
               />
-              <Legend formatter={(value) => value === 'stockFisico' ? 'Stock Físico' : 'Disponible'} />
+              <Legend
+                formatter={(value) => value === 'stockFisico' ? 'Stock Físico' : 'Disponible'}
+                wrapperStyle={isMobile ? { fontSize: 10 } : undefined}
+              />
               <Bar dataKey="stockFisico" fill="#06b6d4" radius={[4, 4, 0, 0]} />
               <Bar dataKey="stockDisponible" fill="#22c55e" radius={[4, 4, 0, 0]} />
             </BarChart>

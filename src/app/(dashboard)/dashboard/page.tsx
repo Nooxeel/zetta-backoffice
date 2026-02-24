@@ -45,14 +45,14 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
           Indicadores de negocio y estado del sistema.
         </p>
       </div>
 
       <Tabs defaultValue="business">
-        <TabsList>
+        <TabsList className="w-full md:w-fit">
           <TabsTrigger value="business">Indicadores de Negocio</TabsTrigger>
           <TabsTrigger value="system">Estado del Sistema</TabsTrigger>
         </TabsList>

@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/src/modules/shared/components/ui/card"
 import { Skeleton } from "@/src/modules/shared/components/ui/skeleton"
+import { useIsMobile } from "@/src/modules/shared/hooks/use-mobile"
 import type { SyncHistoryEntry } from "@/src/modules/shared/lib/api"
 
 interface SyncHistoryChartProps {
@@ -25,6 +26,13 @@ interface SyncHistoryChartProps {
 }
 
 export function SyncHistoryChart({ data, loading }: SyncHistoryChartProps) {
+  const isMobile = useIsMobile()
+
+  const chartHeight = isMobile ? 250 : 350
+  const margins = isMobile
+    ? { top: 5, right: 10, left: 0, bottom: 5 }
+    : { top: 5, right: 30, left: 20, bottom: 5 }
+
   return (
     <Card>
       <CardHeader>
@@ -33,18 +41,18 @@ export function SyncHistoryChart({ data, loading }: SyncHistoryChartProps) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <Skeleton className="h-[350px] w-full" />
+          <Skeleton className="h-[250px] md:h-[350px] w-full" />
         ) : data.length === 0 ? (
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+          <div className="flex h-[250px] md:h-[350px] items-center justify-center text-muted-foreground">
             No sync activity in the last 30 days
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
-            <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <AreaChart data={data} margin={margins}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 9 : 12 }}
                 className="fill-muted-foreground"
                 tickFormatter={(val) => {
                   const d = new Date(val)
@@ -52,9 +60,10 @@ export function SyncHistoryChart({ data, loading }: SyncHistoryChartProps) {
                 }}
               />
               <YAxis
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
                 className="fill-muted-foreground"
                 allowDecimals={false}
+                width={isMobile ? 30 : 60}
               />
               <Tooltip
                 contentStyle={{

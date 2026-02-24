@@ -62,7 +62,7 @@ export function BusinessKpiCards({ data, loading }: BusinessKpiCardsProps) {
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-6">
       {cards.map((card) => (
         <Card key={card.title} className={card.alert ? "border-destructive/50" : ""}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -74,7 +74,7 @@ export function BusinessKpiCards({ data, loading }: BusinessKpiCardsProps) {
               <Skeleton className="h-8 w-20" />
             ) : (
               <>
-                <div className={`text-2xl font-bold ${card.alert ? "text-destructive" : ""}`}>
+                <div className={`text-xl md:text-2xl font-bold ${card.alert ? "text-destructive" : ""}`}>
                   {card.value}
                 </div>
                 <p className="text-xs text-muted-foreground">{card.description}</p>
