@@ -31,8 +31,8 @@ import {
 } from "@/src/modules/shared/lib/api"
 import { ReportDataTable } from "@/src/modules/reports/components/report-data-table"
 import { WarehouseTablePicker } from "./warehouse-table-picker"
-import { FilterBuilder } from "./filter-builder"
-import { ActiveFilters } from "./active-filters"
+import { FilterBuilder } from "@/src/modules/shared/components/filters/filter-builder"
+import { ActiveFilters } from "@/src/modules/shared/components/filters/active-filters"
 
 export function WarehouseReportViewer() {
   // Selection

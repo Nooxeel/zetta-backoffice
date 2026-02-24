@@ -54,6 +54,12 @@ export interface ViewListResponse {
 export interface ViewColumn {
   column: string
   type: string
+  filterCategory: FilterCategory
+}
+
+export interface FilterableColumn {
+  column: string
+  filterCategory: FilterCategory
 }
 
 export interface ViewDataResponse {
@@ -89,6 +95,7 @@ export interface ViewDataParams {
   search?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  filters?: ColumnFilter[]
 }
 
 export async function getViewData(params: ViewDataParams): Promise<ViewDataResponse> {
@@ -101,6 +108,12 @@ export async function getViewData(params: ViewDataParams): Promise<ViewDataRespo
   if (params.search) searchParams.set('search', params.search)
   if (params.sortBy) searchParams.set('sortBy', params.sortBy)
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+  if (params.filters && params.filters.length > 0) {
+    const serialized = params.filters.map(({ column, operator, value, value2 }) => ({
+      column, operator, value, ...(value2 ? { value2 } : {}),
+    }))
+    searchParams.set('filters', JSON.stringify(serialized))
+  }
   return apiFetch(`/api/views/data?${searchParams.toString()}`)
 }
 
@@ -342,6 +355,7 @@ export function getViewExportUrl(params: {
   search?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  filters?: ColumnFilter[]
 }): string {
   const searchParams = new URLSearchParams()
   searchParams.set('db', params.db)
@@ -351,6 +365,12 @@ export function getViewExportUrl(params: {
   if (params.search) searchParams.set('search', params.search)
   if (params.sortBy) searchParams.set('sortBy', params.sortBy)
   if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder)
+  if (params.filters && params.filters.length > 0) {
+    const serialized = params.filters.map(({ column, operator, value, value2 }) => ({
+      column, operator, value, ...(value2 ? { value2 } : {}),
+    }))
+    searchParams.set('filters', JSON.stringify(serialized))
+  }
   return `${API_URL}/api/views/export?${searchParams.toString()}`
 }
 
