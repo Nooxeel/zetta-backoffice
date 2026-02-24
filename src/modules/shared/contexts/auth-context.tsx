@@ -19,6 +19,8 @@ interface AuthContextValue {
   isLoading: boolean
   isAuthenticated: boolean
   loginWithGoogle: (credential: string) => Promise<void>
+  loginWithEmail: (email: string, password: string) => Promise<void>
+  registerWithEmail: (email: string, password: string, name?: string) => Promise<void>
   logout: () => void
   hasRole: (role: Role) => boolean
 }
@@ -49,6 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const saveAuth = useCallback((data: { token: string; user: User }) => {
+    localStorage.setItem(TOKEN_KEY, data.token)
+    document.cookie = "zetta_auth_active=1; path=/; max-age=604800; SameSite=Lax"
+    setToken(data.token)
+    setUser(data.user)
+  }, [])
+
   const loginWithGoogle = useCallback(async (credential: string) => {
     const res = await fetch(`${API_URL}/api/auth/google`, {
       method: "POST",
@@ -62,11 +71,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await res.json()
-    localStorage.setItem(TOKEN_KEY, data.token)
-    document.cookie = "zetta_auth_active=1; path=/; max-age=604800; SameSite=Lax"
-    setToken(data.token)
-    setUser(data.user)
-  }, [])
+    saveAuth(data)
+  }, [saveAuth])
+
+  const loginWithEmail = useCallback(async (email: string, password: string) => {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    })
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error || "Login failed")
+    }
+
+    const data = await res.json()
+    saveAuth(data)
+  }, [saveAuth])
+
+  const registerWithEmail = useCallback(async (email: string, password: string, name?: string) => {
+    const res = await fetch(`${API_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name }),
+    })
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.error || "Registration failed")
+    }
+
+    const data = await res.json()
+    saveAuth(data)
+  }, [saveAuth])
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
@@ -92,6 +130,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user && !!token,
         loginWithGoogle,
+        loginWithEmail,
+        registerWithEmail,
         logout,
         hasRole,
       }}
