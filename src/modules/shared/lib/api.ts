@@ -34,8 +34,61 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 // --- Types ---
 
+export interface DatabaseInfo {
+  name: string
+  label: string | null
+  description: string | null
+  isActive: boolean
+  configured: boolean
+}
+
 export interface DatabaseListResponse {
-  databases: string[]
+  databases: DatabaseInfo[]
+  count: number
+}
+
+// --- Admin Database Types ---
+
+export type ConnectionStatus = 'connected' | 'error' | 'pending_config'
+
+export interface AdminDatabase {
+  id: string
+  dbName: string
+  label: string | null
+  description: string | null
+  isActive: boolean
+  configured: boolean
+  connectionStatus: ConnectionStatus
+  allowedViewsCount: number
+  syncedViewsCount: number
+  createdAt: string
+}
+
+export interface AdminDatabasesResponse {
+  databases: AdminDatabase[]
+  count: number
+}
+
+export interface DiscoveredView {
+  schema: string
+  name: string
+  isAllowed: boolean
+}
+
+export interface DiscoverViewsResponse {
+  views: DiscoveredView[]
+  count: number
+}
+
+export interface AllowedViewInfo {
+  id: string
+  viewName: string
+  viewSchema: string
+  createdAt: string
+}
+
+export interface AllowedViewsResponse {
+  views: AllowedViewInfo[]
   count: number
 }
 
@@ -169,8 +222,9 @@ export interface SyncLogsResponse {
 
 // --- ETL API Functions ---
 
-export async function getEtlStatus(): Promise<EtlStatusResponse> {
-  return apiFetch('/api/etl/status')
+export async function getEtlStatus(db?: string): Promise<EtlStatusResponse> {
+  const params = db ? `?db=${encodeURIComponent(db)}` : ''
+  return apiFetch(`/api/etl/status${params}`)
 }
 
 export async function triggerSync(params: SyncTriggerRequest): Promise<SyncTriggerResponse> {
@@ -316,8 +370,9 @@ export interface WarehouseDataParams {
 
 // --- Warehouse API Functions ---
 
-export async function getWarehouseTables(): Promise<WarehouseTablesResponse> {
-  return apiFetch('/api/warehouse/tables')
+export async function getWarehouseTables(db?: string): Promise<WarehouseTablesResponse> {
+  const params = db ? `?db=${encodeURIComponent(db)}` : ''
+  return apiFetch(`/api/warehouse/tables${params}`)
 }
 
 export async function getWarehouseColumns(syncedViewId: string): Promise<WarehouseColumnsResponse> {
@@ -439,6 +494,49 @@ export async function updateUserRole(userId: string, role: 'ADMIN' | 'BASIC'): P
 
 export async function deleteUser(userId: string): Promise<{ message: string }> {
   return apiFetch(`/api/admin/users/${userId}`, { method: 'DELETE' })
+}
+
+// --- Admin Database API Functions ---
+
+export async function getAdminDatabases(): Promise<AdminDatabasesResponse> {
+  return apiFetch('/api/admin/databases')
+}
+
+export async function createDatabase(data: { name: string; label?: string; description?: string }): Promise<{ database: AdminDatabase; message: string }> {
+  return apiFetch('/api/admin/databases', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function updateDatabase(id: string, data: { label?: string; description?: string; isActive?: boolean }): Promise<{ database: AdminDatabase; message: string }> {
+  return apiFetch(`/api/admin/databases/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deactivateDatabase(id: string): Promise<{ message: string }> {
+  return apiFetch(`/api/admin/databases/${id}`, { method: 'DELETE' })
+}
+
+export async function discoverViews(id: string): Promise<DiscoverViewsResponse> {
+  return apiFetch(`/api/admin/databases/${id}/discover-views`)
+}
+
+export async function getAllowedViews(id: string): Promise<AllowedViewsResponse> {
+  return apiFetch(`/api/admin/databases/${id}/allowed-views`)
+}
+
+export async function addAllowedViews(id: string, views: Array<{ name: string; schema?: string }>): Promise<{ message: string; created: number; skipped: number }> {
+  return apiFetch(`/api/admin/databases/${id}/allowed-views`, {
+    method: 'POST',
+    body: JSON.stringify({ views }),
+  })
+}
+
+export async function removeAllowedView(databaseId: string, viewId: string): Promise<{ message: string }> {
+  return apiFetch(`/api/admin/databases/${databaseId}/allowed-views/${viewId}`, { method: 'DELETE' })
 }
 
 // --- Stats Types ---

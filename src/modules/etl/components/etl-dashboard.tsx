@@ -20,6 +20,7 @@ import {
   getEtlStatus,
   triggerSync,
   syncAllViews,
+  type DatabaseInfo,
   type ViewInfo,
   type SyncedViewInfo,
   type SyncAllEvent,
@@ -37,7 +38,7 @@ interface ViewProgress {
 }
 
 export function EtlDashboard() {
-  const [databases, setDatabases] = React.useState<string[]>([])
+  const [databases, setDatabases] = React.useState<DatabaseInfo[]>([])
   const [views, setViews] = React.useState<ViewInfo[]>([])
   const [syncedViews, setSyncedViews] = React.useState<SyncedViewInfo[]>([])
 
@@ -68,11 +69,11 @@ export function EtlDashboard() {
   // Fetch ETL status on mount
   const refreshStatus = React.useCallback(() => {
     setLoadingStatus(true)
-    getEtlStatus()
+    getEtlStatus(selectedDb || undefined)
       .then((res) => setSyncedViews(res.views))
       .catch((err) => setError(err.message))
       .finally(() => setLoadingStatus(false))
-  }, [])
+  }, [selectedDb])
 
   React.useEffect(() => {
     refreshStatus()

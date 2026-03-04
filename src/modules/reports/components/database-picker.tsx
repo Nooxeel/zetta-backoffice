@@ -7,18 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/modules/shared/components/ui/select"
+import type { DatabaseInfo } from "@/src/modules/shared/lib/api"
 
-/** Display labels for database identifiers */
-export const DB_LABELS: Record<string, string> = {
-  esaabbionet: "Esaab Bupa",
-}
-
+/** Fallback label for a database name (used when full DatabaseInfo is not available) */
 export function getDbLabel(db: string): string {
-  return DB_LABELS[db.toLowerCase()] ?? db
+  return db
 }
 
 interface DatabasePickerProps {
-  databases: string[]
+  databases: DatabaseInfo[]
   selected: string | null
   onSelect: (db: string) => void
   disabled?: boolean
@@ -38,8 +35,8 @@ export function DatabasePicker({ databases, selected, onSelect, disabled }: Data
         </SelectTrigger>
         <SelectContent>
           {databases.map((db) => (
-            <SelectItem key={db} value={db}>
-              {getDbLabel(db)}
+            <SelectItem key={db.name} value={db.name}>
+              {db.label || db.name}
             </SelectItem>
           ))}
         </SelectContent>

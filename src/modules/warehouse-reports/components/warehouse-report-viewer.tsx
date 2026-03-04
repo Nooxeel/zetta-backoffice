@@ -19,22 +19,30 @@ import {
   DropdownMenuTrigger,
 } from "@/src/modules/shared/components/ui/dropdown-menu"
 import {
+  getDatabases,
   getWarehouseTables,
   getWarehouseColumns,
   getWarehouseData,
   getWarehouseExportUrl,
   downloadExport,
+  type DatabaseInfo,
   type WarehouseTableInfo,
   type WarehouseColumn,
   type ColumnFilter,
   type ViewDataResponse,
 } from "@/src/modules/shared/lib/api"
+import { DatabasePicker } from "@/src/modules/reports/components/database-picker"
 import { ReportDataTable } from "@/src/modules/reports/components/report-data-table"
 import { WarehouseTablePicker } from "./warehouse-table-picker"
 import { FilterBuilder } from "@/src/modules/shared/components/filters/filter-builder"
 import { ActiveFilters } from "@/src/modules/shared/components/filters/active-filters"
 
 export function WarehouseReportViewer() {
+  // Database selection
+  const [databases, setDatabases] = React.useState<DatabaseInfo[]>([])
+  const [selectedDb, setSelectedDb] = React.useState<string | null>(null)
+  const [loadingDbs, setLoadingDbs] = React.useState(true)
+
   // Selection
   const [tables, setTables] = React.useState<WarehouseTableInfo[]>([])
   const [columns, setColumns] = React.useState<WarehouseColumn[]>([])
@@ -63,13 +71,24 @@ export function WarehouseReportViewer() {
   const [loadingData, setLoadingData] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
-  // Fetch tables on mount
+  // Fetch databases on mount
   React.useEffect(() => {
-    getWarehouseTables()
+    getDatabases()
+      .then((res) => setDatabases(res.databases))
+      .catch(() => {})
+      .finally(() => setLoadingDbs(false))
+  }, [])
+
+  // Fetch tables when database changes
+  React.useEffect(() => {
+    setLoadingTables(true)
+    setSelectedTable(null)
+    setViewData(null)
+    getWarehouseTables(selectedDb || undefined)
       .then((res) => setTables(res.tables))
       .catch((err) => setError(err.message))
       .finally(() => setLoadingTables(false))
-  }, [])
+  }, [selectedDb])
 
   // Fetch columns when table changes
   React.useEffect(() => {
@@ -188,6 +207,14 @@ export function WarehouseReportViewer() {
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-end gap-4">
+            {databases.length > 1 && (
+              <DatabasePicker
+                databases={databases}
+                selected={selectedDb}
+                onSelect={setSelectedDb}
+                disabled={loadingDbs}
+              />
+            )}
             <WarehouseTablePicker
               tables={tables}
               selected={selectedTable}

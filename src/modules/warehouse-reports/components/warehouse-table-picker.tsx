@@ -3,7 +3,9 @@
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/src/modules/shared/components/ui/select"
@@ -32,6 +34,16 @@ export function WarehouseTablePicker({
     )
   }
 
+  // Group tables by dbName
+  const grouped = tables.reduce<Record<string, WarehouseTableInfo[]>>((acc, t) => {
+    const key = t.dbName || "unknown"
+    if (!acc[key]) acc[key] = []
+    acc[key].push(t)
+    return acc
+  }, {})
+
+  const dbNames = Object.keys(grouped)
+
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium">Table</label>
@@ -46,14 +58,30 @@ export function WarehouseTablePicker({
           <SelectValue placeholder="Select table..." />
         </SelectTrigger>
         <SelectContent>
-          {tables.map((table) => (
-            <SelectItem key={table.id} value={table.id}>
-              {table.sourceView}
-              <span className="ml-1 text-muted-foreground text-xs">
-                ({table.lastSyncRows?.toLocaleString() ?? 0} rows)
-              </span>
-            </SelectItem>
-          ))}
+          {dbNames.length <= 1 ? (
+            tables.map((table) => (
+              <SelectItem key={table.id} value={table.id}>
+                {table.sourceView}
+                <span className="ml-1 text-muted-foreground text-xs">
+                  ({table.lastSyncRows?.toLocaleString() ?? 0} rows)
+                </span>
+              </SelectItem>
+            ))
+          ) : (
+            dbNames.map((dbName) => (
+              <SelectGroup key={dbName}>
+                <SelectLabel>{dbName}</SelectLabel>
+                {grouped[dbName].map((table) => (
+                  <SelectItem key={table.id} value={table.id}>
+                    {table.sourceView}
+                    <span className="ml-1 text-muted-foreground text-xs">
+                      ({table.lastSyncRows?.toLocaleString() ?? 0} rows)
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))
+          )}
         </SelectContent>
       </Select>
     </div>

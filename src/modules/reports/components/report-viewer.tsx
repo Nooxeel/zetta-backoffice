@@ -24,6 +24,7 @@ import {
   getViewData,
   getViewExportUrl,
   downloadExport,
+  type DatabaseInfo,
   type ViewInfo,
   type ViewColumn,
   type ViewDataResponse,
@@ -36,7 +37,7 @@ import { FilterBuilder } from "@/src/modules/shared/components/filters/filter-bu
 import { ActiveFilters } from "@/src/modules/shared/components/filters/active-filters"
 
 export function ReportViewer() {
-  const [databases, setDatabases] = React.useState<string[]>([])
+  const [databases, setDatabases] = React.useState<DatabaseInfo[]>([])
   const [views, setViews] = React.useState<ViewInfo[]>([])
   const [viewData, setViewData] = React.useState<ViewDataResponse | null>(null)
 
