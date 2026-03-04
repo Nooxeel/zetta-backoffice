@@ -12,7 +12,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useAuth } from "@/src/modules/shared/contexts/auth-context";
 import type { Role } from "@/src/modules/shared/lib/auth-types";
 
@@ -90,8 +89,6 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, hasRole } = useAuth();
-  const { resolvedTheme } = useTheme();
-  const logoSrc = resolvedTheme === "dark" ? "/logo_esaab.svg" : "/logo_esaab_light.svg";
 
   const visibleMenuItems = menuItems.filter(
     (item) => !item.requiredRole || hasRole(item.requiredRole)
@@ -116,12 +113,20 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/dashboard">
           <Image
-            src={logoSrc}
+            src="/logo_esaab.svg"
             alt="Esaab"
             width={170}
             height={34}
             priority
-            className="h-8 w-auto"
+            className="hidden dark:block h-8 w-auto"
+          />
+          <Image
+            src="/logo_esaab_light.svg"
+            alt="Esaab"
+            width={170}
+            height={34}
+            priority
+            className="block dark:hidden h-8 w-auto"
           />
         </Link>
       </SidebarHeader>
