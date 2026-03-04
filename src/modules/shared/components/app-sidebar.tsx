@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  LayoutDashboard,
   FileText,
   Database,
   SlidersHorizontal,
@@ -10,6 +9,7 @@ import {
   Home,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/src/modules/shared/contexts/auth-context";
@@ -115,13 +115,13 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <LayoutDashboard className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Zetta</span>
-                  <span className="text-xs">Reports</span>
-                </div>
+                <Image
+                  src="/logo_esaab.svg"
+                  alt="Esaab"
+                  width={140}
+                  height={28}
+                  priority
+                />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
