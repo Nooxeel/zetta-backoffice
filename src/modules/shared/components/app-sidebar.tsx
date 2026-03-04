@@ -121,6 +121,15 @@ export function AppSidebar() {
                   width={140}
                   height={28}
                   priority
+                  className="hidden dark:block"
+                />
+                <Image
+                  src="/logo_esaab_light.svg"
+                  alt="Esaab"
+                  width={140}
+                  height={28}
+                  priority
+                  className="block dark:hidden"
                 />
               </Link>
             </SidebarMenuButton>
