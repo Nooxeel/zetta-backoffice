@@ -8,6 +8,15 @@ import {
   SelectValue,
 } from "@/src/modules/shared/components/ui/select"
 
+/** Display labels for database identifiers */
+export const DB_LABELS: Record<string, string> = {
+  esaabbionet: "Esaab Bupa",
+}
+
+export function getDbLabel(db: string): string {
+  return DB_LABELS[db.toLowerCase()] ?? db
+}
+
 interface DatabasePickerProps {
   databases: string[]
   selected: string | null
@@ -30,7 +39,7 @@ export function DatabasePicker({ databases, selected, onSelect, disabled }: Data
         <SelectContent>
           {databases.map((db) => (
             <SelectItem key={db} value={db}>
-              {db}
+              {getDbLabel(db)}
             </SelectItem>
           ))}
         </SelectContent>

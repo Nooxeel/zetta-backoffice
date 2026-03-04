@@ -21,6 +21,7 @@ import {
   type SyncStatus,
 } from "@/src/modules/shared/lib/api"
 import { SyncLogViewer } from "./sync-log-viewer"
+import { getDbLabel } from "@/src/modules/reports/components/database-picker"
 
 interface SyncStatusTableProps {
   views: SyncedViewInfo[]
@@ -112,7 +113,7 @@ export function SyncStatusTable({ views, onRefresh }: SyncStatusTableProps) {
 
             return (
               <TableRow key={view.id}>
-                <TableCell className="font-medium">{view.dbName || "—"}</TableCell>
+                <TableCell className="font-medium">{view.dbName ? getDbLabel(view.dbName) : "—"}</TableCell>
                 <TableCell>
                   <span className="text-muted-foreground">{view.sourceSchema}.</span>
                   {view.sourceView}
