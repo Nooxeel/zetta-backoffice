@@ -113,22 +113,17 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/dashboard">
-                <Image
-                  src={logoSrc}
-                  alt="Esaab"
-                  width={140}
-                  height={28}
-                  priority
-                />
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="p-4">
+        <Link href="/dashboard">
+          <Image
+            src={logoSrc}
+            alt="Esaab"
+            width={170}
+            height={34}
+            priority
+            className="h-8 w-auto"
+          />
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
