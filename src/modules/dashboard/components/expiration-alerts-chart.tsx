@@ -76,7 +76,7 @@ export function ExpirationAlertsChart({ data, loading }: ExpirationAlertsChartPr
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart data={data} layout="vertical" margin={margins}>
+            <BarChart data={data.map(d => ({ ...d, lineaDesc: d.lineaDesc?.trim() || d.lineaCod }))} layout="vertical" margin={margins}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis
                 type="number"
